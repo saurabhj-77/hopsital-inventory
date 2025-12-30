@@ -1,70 +1,183 @@
-# Getting Started with Create React App
+🏥 Hospital Inventory Management System – Client
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern Hospital Inventory Management System (Frontend) built with React.js to manage medical inventory, departments, suppliers, compliance, and role-based workflows across hospitals, clinics, and associated stakeholders.
 
-## Available Scripts
+This project is designed to be scalable, role-driven, and enterprise-ready.
 
-In the project directory, you can run:
+🚀 Features
 
-### `npm start`
+🔐 Role-based dashboards
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Hospital Admin
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Manager
 
-### `npm test`
+Employee
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Client
 
-### `npm run build`
+Lawyer (case & document workflows)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+📦 Inventory Management
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Medical & surgical equipment tracking
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Department-wise allocation
 
-### `npm run eject`
+Expiry & recall management
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Maintenance & calibration tracking
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+📊 Advanced Modules
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+AI Assistant (placeholder for future AI integrations)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Demand forecasting & planning
 
-## Learn More
+Supplier & vendor management
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Emergency & critical care inventory
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Audit & compliance monitoring
 
-### Code Splitting
+🧭 Structured UI
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Reusable layouts
 
-### Analyzing the Bundle Size
+Protected routes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Modular page architecture
 
-### Making a Progressive Web App
+Centralized constants & utilities
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+🛠 Tech Stack
 
-### Advanced Configuration
+Frontend: React.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Routing: React Router
 
-### Deployment
+Styling: CSS / Custom Theme
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+State Management: Context / Local utilities
 
-### `npm run build` fails to minify
+Build Tooling: Create React App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Package Manager: npm
+
+📂 Project Structure
+client/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   ├── common/
+│   │   ├── hospital/
+│   │   ├── client/
+│   │   └── lawyer/
+│   ├── pages/
+│   │   ├── hospital/
+│   │   ├── manager/
+│   │   ├── employee/
+│   │   ├── client/
+│   │   └── lawyer/
+│   ├── utils/
+│   ├── styles/
+│   └── index.js
+├── package.json
+├── package-lock.json
+└── README.md
+
+⚙️ Getting Started (Local Setup)
+✅ Prerequisites
+
+Make sure you have installed:
+
+Node.js (v16+ recommended)
+
+npm
+
+Check versions:
+
+node -v
+npm -v
+
+📥 Clone the Repository
+git clone https://github.com/saurabhj-77/hopsital-inventory.git
+cd hopsital-inventory/client
+
+📦 Install Dependencies
+npm install
+
+▶️ Run the Application
+npm start
+
+
+The app will run on:
+
+http://localhost:3000
+
+🔐 Environment Variables
+
+Create a .env file in the client directory if needed:
+
+REACT_APP_API_BASE_URL=http://localhost:5000
+
+
+⚠️ .env files are ignored via .gitignore for security reasons.
+
+🧪 Available Scripts
+Command	Description
+npm start	Run app in development
+npm run build	Create production build
+npm test	Run tests
+npm run eject	Eject CRA configuration
+🔒 Git & Dependency Management
+
+node_modules is not committed
+
+Dependencies are managed via package.json & package-lock.json
+
+New contributors just need:
+
+npm install
+
+📈 Future Enhancements
+
+Backend API integration (Node.js / Express)
+
+Authentication & authorization
+
+Real-time inventory updates
+
+AI-driven analytics
+
+CI/CD pipeline
+
+Docker support
+
+🤝 Contributing
+
+Fork the repository
+
+Create a feature branch
+
+git checkout -b feature/your-feature-name
+
+
+Commit changes
+
+git commit -m "feat: add new feature"
+
+
+Push and create a Pull Request
+
+📄 License
+
+This project is currently private/internal use.
+License can be added later if required.
+
+👤 Author
+
+Saurabh Jain
+Frontend / Full-Stack Developer
+GitHub: https://github.com/saurabhj-77
