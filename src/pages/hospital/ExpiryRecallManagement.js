@@ -72,13 +72,15 @@ import {
   Search as SearchIcon,
   DateRange as DateRangeIcon,
   Inventory2 as Inventory2Icon,
-  History as HistoryIcon
+  History as HistoryIcon,
+  Image as ImageIcon,
+  Healing as HealingIcon,
 } from '@mui/icons-material';
 
 const ExpiryRecallManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   const [activeTab, setActiveTab] = useState(0);
   const [expiryItems, setExpiryItems] = useState([]);
   const [recallItems, setRecallItems] = useState([]);
@@ -102,225 +104,356 @@ const ExpiryRecallManagement = () => {
   const [filterDays, setFilterDays] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const [openDeviceDetails, setOpenDeviceDetails] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState(null);
 
-  // Initialize with dummy data
-  useEffect(() => {
-    const loadData = () => {
-      // Check if data exists in localStorage
-      const savedExpiryData = localStorage.getItem('expiryRecallData');
-      const savedRecallData = localStorage.getItem('recallAlerts');
-      const savedDisposalData = localStorage.getItem('disposalLogs');
 
-      if (savedExpiryData) {
-        setExpiryItems(JSON.parse(savedExpiryData));
-      } else {
-        // Generate dummy expiry data
-        const dummyExpiryData = [
-          {
-            id: 1,
-            name: 'Paracetamol 500mg',
-            batch: 'BATCH-001',
-            expiryDate: '2024-03-15',
-            quantity: 25,
-            category: 'Pharmacy',
-            location: 'Main Pharmacy',
-            daysToExpiry: 15,
-            status: 'critical',
-            value: '$1250'
-          },
-          {
-            id: 2,
-            name: 'Insulin Vials',
-            batch: 'BATCH-003',
-            expiryDate: '2024-04-10',
-            quantity: 50,
-            category: 'Pharmacy',
-            location: 'ER Storage',
-            daysToExpiry: 45,
-            status: 'warning',
-            value: '$4500'
-          },
-          {
-            id: 3,
-            name: 'Saline Solution 500ml',
-            batch: 'BATCH-005',
-            expiryDate: '2024-05-01',
-            quantity: 120,
-            category: 'Consumable',
-            location: 'ICU Storage',
-            daysToExpiry: 65,
-            status: 'warning',
-            value: '$1200'
-          },
-          {
-            id: 4,
-            name: 'Surgical Gloves',
-            batch: 'BATCH-004',
-            expiryDate: '2024-02-28',
-            quantity: 45,
-            category: 'Consumable',
-            location: 'OR Storage',
-            daysToExpiry: -2,
-            status: 'expired',
-            value: '$450'
-          },
-          {
-            id: 5,
-            name: 'Epinephrine 1mg',
-            batch: 'BATCH-006',
-            expiryDate: '2024-03-05',
-            quantity: 30,
-            category: 'Pharmacy',
-            location: 'Emergency Cart',
-            daysToExpiry: 8,
-            status: 'critical',
-            value: '$9000'
-          },
-          {
-            id: 6,
-            name: 'Antiseptic Solution',
-            batch: 'BATCH-007',
-            expiryDate: '2024-06-15',
-            quantity: 80,
-            category: 'Consumable',
-            location: 'Ward Storage',
-            daysToExpiry: 100,
-            status: 'safe',
-            value: '$800'
-          },
-          {
-            id: 7,
-            name: 'Vitamin D3',
-            batch: 'BATCH-VD001',
-            expiryDate: '2024-02-20',
-            quantity: 15,
-            category: 'Pharmacy',
-            location: 'Main Pharmacy',
-            daysToExpiry: -8,
-            status: 'expired',
-            value: '$150'
-          },
-          {
-            id: 8,
-            name: 'Bandages',
-            batch: 'BATCH-008',
-            expiryDate: '2024-07-01',
-            quantity: 200,
-            category: 'Consumable',
-            location: 'Central Storage',
-            daysToExpiry: 115,
-            status: 'safe',
-            value: '$1000'
-          }
-        ];
-        setExpiryItems(dummyExpiryData);
-        localStorage.setItem('expiryRecallData', JSON.stringify(dummyExpiryData));
-      }
+// Initialize with dummy data
+useEffect(() => {
+  const loadData = () => {
+    // Check if data exists in localStorage
+    const savedExpiryData = localStorage.getItem('expiryRecallData');
+    const savedRecallData = localStorage.getItem('recallAlerts');
+    const savedDisposalData = localStorage.getItem('disposalLogs');
 
-      if (savedRecallData) {
-        setRecallItems(JSON.parse(savedRecallData));
-      } else {
-        const dummyRecallData = [
-          {
-            id: 1,
-            product: 'Blood Pressure Cuff',
-            manufacturer: 'MediCare Devices Inc.',
-            batch: 'BP-2023-09',
-            recallDate: '2024-01-15',
-            severity: 'high',
-            reason: 'Potential calibration inaccuracies',
-            status: 'pending',
-            affectedQuantity: 12,
-            urgency: 'Critical'
-          },
-          {
-            id: 2,
-            product: 'Sterile Gauze Pads',
-            manufacturer: 'SteriHealth Supplies',
-            batch: 'SG-2023-11',
-            recallDate: '2024-01-20',
-            severity: 'medium',
-            reason: 'Possible sterilization failure',
-            status: 'in-progress',
-            affectedQuantity: 200,
-            urgency: 'High'
-          },
-          {
-            id: 3,
-            product: 'IV Catheter Set',
-            manufacturer: 'Vascular Care Inc.',
-            batch: 'IV-2023-08',
-            recallDate: '2024-01-10',
-            severity: 'high',
-            reason: 'Risk of leakage',
-            status: 'resolved',
-            affectedQuantity: 45,
-            urgency: 'Critical'
-          },
-          {
-            id: 4,
-            product: 'Thermometer Probe Covers',
-            manufacturer: 'TempSafe Medical',
-            batch: 'TP-2023-12',
-            recallDate: '2024-01-25',
-            severity: 'low',
-            reason: 'Packaging defect',
-            status: 'pending',
-            affectedQuantity: 150,
-            urgency: 'Medium'
-          }
-        ];
-        setRecallItems(dummyRecallData);
-        localStorage.setItem('recallAlerts', JSON.stringify(dummyRecallData));
-      }
+    if (savedExpiryData) {
+      setExpiryItems(JSON.parse(savedExpiryData));
+    } else {
+      // Generate dummy expiry data
+      const dummyExpiryData = [
+        {
+          id: 1,
+          name: 'Paracetamol 500mg',
+          batch: 'BATCH-001',
+          expiryDate: '2024-03-15',
+          quantity: 25,
+          category: 'Pharmacy',
+          location: 'Main Pharmacy',
+          daysToExpiry: 15,
+          status: 'critical',
+          value: '$1250'
+        },
+        {
+          id: 2,
+          name: 'Insulin Vials',
+          batch: 'BATCH-003',
+          expiryDate: '2024-04-10',
+          quantity: 50,
+          category: 'Pharmacy',
+          location: 'ER Storage',
+          daysToExpiry: 45,
+          status: 'warning',
+          value: '$4500'
+        },
+        {
+          id: 3,
+          name: 'Saline Solution 500ml',
+          batch: 'BATCH-005',
+          expiryDate: '2024-05-01',
+          quantity: 120,
+          category: 'Consumable',
+          location: 'ICU Storage',
+          daysToExpiry: 65,
+          status: 'warning',
+          value: '$1200'
+        },
+        {
+          id: 4,
+          name: 'Surgical Gloves',
+          batch: 'BATCH-004',
+          expiryDate: '2024-02-28',
+          quantity: 45,
+          category: 'Consumable',
+          location: 'OR Storage',
+          daysToExpiry: -2,
+          status: 'expired',
+          value: '$450'
+        },
+        {
+          id: 5,
+          name: 'Epinephrine 1mg',
+          batch: 'BATCH-006',
+          expiryDate: '2024-03-05',
+          quantity: 30,
+          category: 'Pharmacy',
+          location: 'Emergency Cart',
+          daysToExpiry: 8,
+          status: 'critical',
+          value: '$9000'
+        },
+        {
+          id: 6,
+          name: 'Antiseptic Solution',
+          batch: 'BATCH-007',
+          expiryDate: '2024-06-15',
+          quantity: 80,
+          category: 'Consumable',
+          location: 'Ward Storage',
+          daysToExpiry: 100,
+          status: 'safe',
+          value: '$800'
+        },
+        {
+          id: 7,
+          name: 'Vitamin D3',
+          batch: 'BATCH-VD001',
+          expiryDate: '2024-02-20',
+          quantity: 15,
+          category: 'Pharmacy',
+          location: 'Main Pharmacy',
+          daysToExpiry: -8,
+          status: 'expired',
+          value: '$150'
+        },
+        {
+          id: 8,
+          name: 'Bandages',
+          batch: 'BATCH-008',
+          expiryDate: '2024-07-01',
+          quantity: 200,
+          category: 'Consumable',
+          location: 'Central Storage',
+          daysToExpiry: 115,
+          status: 'safe',
+          value: '$1000'
+        }
+      ];
+      setExpiryItems(dummyExpiryData);
+      localStorage.setItem('expiryRecallData', JSON.stringify(dummyExpiryData));
+    }
 
-      if (savedDisposalData) {
-        setDisposalLogs(JSON.parse(savedDisposalData));
-      } else {
-        const dummyDisposalData = [
-          {
-            id: 1,
-            itemName: 'Expired Vaccine',
-            batch: 'VAC-2022-01',
-            disposalDate: '2024-01-10',
-            quantity: 25,
-            disposedBy: 'Dr. Smith',
-            reason: 'Past expiry date',
-            method: 'Medical Waste',
-            cost: '$1250'
-          },
-          {
-            id: 2,
-            itemName: 'Damaged Syringes',
-            batch: 'SYR-2023-05',
-            disposalDate: '2024-01-12',
-            quantity: 100,
-            disposedBy: 'Nurse Johnson',
-            reason: 'Damaged packaging',
-            method: 'Sharps Container',
-            cost: '$500'
-          },
-          {
-            id: 3,
-            itemName: 'Contaminated Gloves',
-            batch: 'GLV-2023-09',
-            disposalDate: '2024-01-15',
-            quantity: 50,
-            disposedBy: 'Pharmacist Lee',
-            reason: 'Recall - Sterilization issue',
-            method: 'Biohazard Waste',
-            cost: '$250'
-          }
-        ];
-        setDisposalLogs(dummyDisposalData);
-        localStorage.setItem('disposalLogs', JSON.stringify(dummyDisposalData));
-      }
-      
-      setLoaded(true);
-    };
+    if (savedRecallData) {
+      setRecallItems(JSON.parse(savedRecallData));
+    } else {
+      // UPDATED: Expanded dummy recall data with more medical devices
+      const dummyRecallData = [
+        {
+          id: 1,
+          product: 'Blood Pressure Cuff',
+          manufacturer: 'MediCare Devices Inc.',
+          batch: 'BP-2023-09',
+          recallDate: '2024-01-15',
+          severity: 'high',
+          reason: 'Potential calibration inaccuracies leading to incorrect readings',
+          status: 'pending',
+          affectedQuantity: 12,
+          urgency: 'Critical',
+          // NEW FIELDS for expanded device data
+          deviceType: 'Diagnostic Equipment',
+          model: 'BPC-2000',
+          serialNumbers: ['SN-2023-09-001 to SN-2023-09-012'],
+          riskLevel: 'Class I - High Risk',
+          fdaRecallNumber: 'Z-2345-2024',
+          images: [
+            'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop', // Blood pressure monitor
+            'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=400&fit=crop', // Medical equipment
+            'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=600&h=400&fit=crop' // Health monitoring
+          ],
+          medicalConditions: ['Hypertension', 'Cardiovascular Disease', 'Preoperative Monitoring']
+        },
+        {
+          id: 2,
+          product: 'Sterile Gauze Pads',
+          manufacturer: 'SteriHealth Supplies',
+          batch: 'SG-2023-11',
+          recallDate: '2024-01-20',
+          severity: 'medium',
+          reason: 'Possible sterilization failure - packaging integrity compromised',
+          status: 'in-progress',
+          affectedQuantity: 200,
+          urgency: 'High',
+          deviceType: 'Medical Consumable',
+          model: 'Gauze-5x5',
+          serialNumbers: ['Lot-2023-11-001 to Lot-2023-11-020'],
+          riskLevel: 'Class II - Moderate Risk',
+          fdaRecallNumber: 'Z-2346-2024',
+          images: [
+            'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop', // Medical supplies
+            'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&h=400&fit=crop' // Hospital supplies
+          ],
+          medicalConditions: ['Wound Care', 'Post-surgical Dressings', 'Burn Treatment', 'Trauma Care']
+        },
+        {
+          id: 3,
+          product: 'IV Catheter Set',
+          manufacturer: 'Vascular Care Inc.',
+          batch: 'IV-2023-08',
+          recallDate: '2024-01-10',
+          severity: 'high',
+          reason: 'Risk of leakage at connection point - potential for contamination',
+          status: 'resolved',
+          affectedQuantity: 45,
+          urgency: 'Critical',
+          deviceType: 'Infusion Device',
+          model: 'IV-Cath-18G',
+          serialNumbers: ['SN-IV-2023-08-001 to SN-IV-2023-08-045'],
+          riskLevel: 'Class I - High Risk',
+          fdaRecallNumber: 'Z-2344-2024',
+          images: [
+            'https://images.unsplash.com/photo-1559757149-e9b0c9c8b689?w=600&h=400&fit=crop', // IV equipment
+            'https://images.unsplash.com/photo-1584467735871-8db9ac8d0916?w=600&h=400&fit=crop' // Medical injection
+          ],
+          medicalConditions: ['Intravenous Therapy', 'Chemotherapy', 'Antibiotic Administration', 'Hydration Therapy']
+        },
+        {
+          id: 4,
+          product: 'Thermometer Probe Covers',
+          manufacturer: 'TempSafe Medical',
+          batch: 'TP-2023-12',
+          recallDate: '2024-01-25',
+          severity: 'low',
+          reason: 'Packaging defect - potential for cross-contamination',
+          status: 'pending',
+          affectedQuantity: 150,
+          urgency: 'Medium',
+          deviceType: 'Diagnostic Accessory',
+          model: 'TPC-100',
+          serialNumbers: ['Lot-TPC-2023-12'],
+          riskLevel: 'Class II - Moderate Risk',
+          fdaRecallNumber: 'Z-2347-2024',
+          images: [
+            'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=600&h=400&fit=crop' // Medical thermometer
+          ],
+          medicalConditions: ['Fever Monitoring', 'Infection Control', 'Postoperative Care', 'Pediatric Care']
+        },
+        // NEW: Additional medical devices
+        {
+          id: 5,
+          product: 'Defibrillator Pads',
+          manufacturer: 'CardioSave Technologies',
+          batch: 'DF-2023-10',
+          recallDate: '2024-02-01',
+          severity: 'high',
+          reason: 'Adhesive failure - may detach during emergency use',
+          status: 'pending',
+          affectedQuantity: 25,
+          urgency: 'Critical',
+          deviceType: 'Emergency Equipment',
+          model: 'LifePads-2',
+          serialNumbers: ['SN-DF-2023-10-001 to SN-DF-2023-10-025'],
+          riskLevel: 'Class I - High Risk',
+          fdaRecallNumber: 'Z-2348-2024',
+          images: [
+            'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&h=400&fit=crop', // Emergency equipment
+            'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=600&h=400&fit=crop' // Medical device
+          ],
+          medicalConditions: ['Cardiac Arrest', 'Ventricular Fibrillation', 'Tachycardia', 'Emergency Resuscitation']
+        },
+        {
+          id: 6,
+          product: 'Surgical Stapler',
+          manufacturer: 'Precision Surgical Inc.',
+          batch: 'SS-2023-07',
+          recallDate: '2024-01-30',
+          severity: 'high',
+          reason: 'Mechanical failure - potential for misfiring during procedures',
+          status: 'in-progress',
+          affectedQuantity: 8,
+          urgency: 'Critical',
+          deviceType: 'Surgical Instrument',
+          model: 'Stapler-X2000',
+          serialNumbers: ['SN-SS-2023-07-001 to SN-SS-2023-07-008'],
+          riskLevel: 'Class I - High Risk',
+          fdaRecallNumber: 'Z-2349-2024',
+          images: [
+            'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop' // Surgical equipment
+          ],
+          medicalConditions: ['Surgical Procedures', 'Gastrointestinal Surgery', 'Cardiothoracic Surgery', 'Trauma Surgery']
+        },
+        {
+          id: 7,
+          product: 'Nebulizer Machine',
+          manufacturer: 'RespiraTech Medical',
+          batch: 'NB-2023-12',
+          recallDate: '2024-02-05',
+          severity: 'medium',
+          reason: 'Motor overheating - potential fire hazard',
+          status: 'pending',
+          affectedQuantity: 15,
+          urgency: 'High',
+          deviceType: 'Respiratory Equipment',
+          model: 'Nebulizer-Pro',
+          serialNumbers: ['SN-NB-2023-12-001 to SN-NB-2023-12-015'],
+          riskLevel: 'Class II - Moderate Risk',
+          fdaRecallNumber: 'Z-2350-2024',
+          images: [
+            'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=400&fit=crop' // Respiratory equipment
+          ],
+          medicalConditions: ['Asthma', 'COPD', 'Cystic Fibrosis', 'Bronchitis', 'Respiratory Infections']
+        },
+        {
+          id: 8,
+          product: 'Portable ECG Monitor',
+          manufacturer: 'HeartTrace Systems',
+          batch: 'ECG-2023-11',
+          recallDate: '2024-02-10',
+          severity: 'medium',
+          reason: 'Software glitch - intermittent display freezing',
+          status: 'in-progress',
+          affectedQuantity: 30,
+          urgency: 'High',
+          deviceType: 'Cardiac Monitoring',
+          model: 'ECG-Mobile-3',
+          serialNumbers: ['SN-ECG-2023-11-001 to SN-ECG-2023-11-030'],
+          riskLevel: 'Class II - Moderate Risk',
+          fdaRecallNumber: 'Z-2351-2024',
+          images: [
+            'https://images.unsplash.com/photo-1559757149-e9b0c9c8b689?w=600&h=400&fit=crop' // Heart monitor
+          ],
+          medicalConditions: ['Arrhythmia', 'Heart Disease', 'Post-MI Monitoring', 'Cardiac Rehabilitation']
+        }
+      ];
+      setRecallItems(dummyRecallData);
+      localStorage.setItem('recallAlerts', JSON.stringify(dummyRecallData));
+    }
 
-    loadData();
-  }, []);
+    if (savedDisposalData) {
+      setDisposalLogs(JSON.parse(savedDisposalData));
+    } else {
+      const dummyDisposalData = [
+        {
+          id: 1,
+          itemName: 'Expired Vaccine',
+          batch: 'VAC-2022-01',
+          disposalDate: '2024-01-10',
+          quantity: 25,
+          disposedBy: 'Dr. Smith',
+          reason: 'Past expiry date',
+          method: 'Medical Waste',
+          cost: '$1250'
+        },
+        {
+          id: 2,
+          itemName: 'Damaged Syringes',
+          batch: 'SYR-2023-05',
+          disposalDate: '2024-01-12',
+          quantity: 100,
+          disposedBy: 'Nurse Johnson',
+          reason: 'Damaged packaging',
+          method: 'Sharps Container',
+          cost: '$500'
+        },
+        {
+          id: 3,
+          itemName: 'Contaminated Gloves',
+          batch: 'GLV-2023-09',
+          disposalDate: '2024-01-15',
+          quantity: 50,
+          disposedBy: 'Pharmacist Lee',
+          reason: 'Recall - Sterilization issue',
+          method: 'Biohazard Waste',
+          cost: '$250'
+        }
+      ];
+      setDisposalLogs(dummyDisposalData);
+      localStorage.setItem('disposalLogs', JSON.stringify(dummyDisposalData));
+    }
+
+    setLoaded(true);
+  };
+
+  loadData();
+}, []);  
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -476,7 +609,7 @@ const ExpiryRecallManagement = () => {
       const expiryDate = new Date(newItemForm.expiryDate);
       const today = new Date();
       const daysToExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-      
+
       let status = 'safe';
       if (daysToExpiry <= 0) status = 'expired';
       else if (daysToExpiry <= 30) status = 'critical';
@@ -504,7 +637,7 @@ const ExpiryRecallManagement = () => {
   };
 
   const updateRecallStatus = (recallId, newStatus) => {
-    const updatedRecalls = recallItems.map(recall => 
+    const updatedRecalls = recallItems.map(recall =>
       recall.id === recallId ? { ...recall, status: newStatus } : recall
     );
     setRecallItems(updatedRecalls);
@@ -517,7 +650,7 @@ const ExpiryRecallManagement = () => {
     if (filterDays === 'warning') return item.daysToExpiry > 30 && item.daysToExpiry <= 60;
     if (filterDays === 'safe') return item.daysToExpiry > 60;
     return true;
-  }).filter(item => 
+  }).filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.batch.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -533,94 +666,94 @@ const ExpiryRecallManagement = () => {
 
   const stats = getExpiryStats();
 
-const StatCard = ({
-  value,
-  label,
-  subLabel,
-  icon: Icon,
-  color,
-  gradient,
-  delay = 0
-}) => (
-  <Grow in={loaded} timeout={500 + delay}>
-    <Card
-      sx={{
-        background: gradient,
-        color: 'black',
-        borderRadius: 3,
-        transition: 'all 0.3s ease',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: `0 12px 24px ${alpha(color, 0.3)}`
-        },
-        position: 'relative',
-        overflow: 'hidden',
-        flex: 1,
-        minWidth: isMobile ? '100%' : 220
-      }}
-    >
-      {/* AI Indicator (same as reference) */}
-      <Box
+  const StatCard = ({
+    value,
+    label,
+    subLabel,
+    icon: Icon,
+    color,
+    gradient,
+    delay = 0
+  }) => (
+    <Grow in={loaded} timeout={500 + delay}>
+      <Card
         sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          background: 'rgba(255,255,255,0.2)',
-          borderRadius: '50%',
-          width: 24,
-          height: 24,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          background: gradient,
+          color: 'black',
+          borderRadius: 3,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: `0 12px 24px ${alpha(color, 0.3)}`
+          },
+          position: 'relative',
+          overflow: 'hidden',
+          flex: 1,
+          minWidth: isMobile ? '100%' : 220
         }}
       >
-        <Icon sx={{ fontSize: 14, opacity: 0.8 }} />
-      </Box>
-
-      <CardContent sx={{ p: 3 }}>
+        {/* AI Indicator (same as reference) */}
         <Box
           sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '50%',
+            width: 24,
+            height: 24,
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
-          {/* Text Section */}
-          <Box>
-            <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
-              {value}
-            </Typography>
+          <Icon sx={{ fontSize: 14, opacity: 0.8 }} />
+        </Box>
 
-            <Typography variant="h5" sx={{ opacity: 0.9, fontWeight: 600 }}>
-              {label}
-            </Typography>
-
-            {subLabel && (
-              <Typography variant="h6" sx={{ opacity: 0.8, mt: 1 }}>
-                {subLabel}
-              </Typography>
-            )}
-          </Box>
-
-          {/* Icon Box */}
+        <CardContent sx={{ p: 3 }}>
           <Box
             sx={{
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: 2,
-              p: 1,
-              color: 'black',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'space-between',
+              alignItems: 'flex-start'
             }}
           >
-            <Icon sx={{ fontSize: 28 }} />
+            {/* Text Section */}
+            <Box>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
+                {value}
+              </Typography>
+
+              <Typography variant="h5" sx={{ opacity: 0.9, fontWeight: 600 }}>
+                {label}
+              </Typography>
+
+              {subLabel && (
+                <Typography variant="h6" sx={{ opacity: 0.8, mt: 1 }}>
+                  {subLabel}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Icon Box */}
+            <Box
+              sx={{
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: 2,
+                p: 1,
+                color: 'black',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Icon sx={{ fontSize: 28 }} />
+            </Box>
           </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Grow>
-);
+        </CardContent>
+      </Card>
+    </Grow>
+  );
 
 
   const QuickActionButton = ({ icon: Icon, label, color, onClick }) => (
@@ -649,23 +782,41 @@ const StatCard = ({
     </Button>
   );
 
+  // NEW FUNCTION: Handle View Details button click
+  const handleViewDetails = (device) => {
+    setSelectedDevice(device);
+    setOpenDeviceDetails(true);
+  };
+
+  // NEW FUNCTION: Close device details modal
+  const handleCloseDeviceDetails = () => {
+    setOpenDeviceDetails(false);
+    setSelectedDevice(null);
+  };
+
+  const handleImageError = (e) => {
+  e.target.onerror = null; // Prevent infinite loop
+  e.target.src = `https://via.placeholder.com/400x300/cccccc/969696?text=Image+Not+Available`;
+  e.target.alt = 'Image not available';
+};
+
   return (
     <Fade in={loaded} timeout={500}>
       <Box sx={{ p: isMobile ? 1 : 3 }}>
         {/* Header with Actions */}
         <Slide in={loaded} direction="down" timeout={300}>
           <Box sx={{ mb: 4 }}>
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'flex-start',
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? 2 : 0,
               mb: 2
             }}>
               <Box>
-                <Typography variant="h4" component="h1" sx={{ 
-                  fontWeight: 700, 
+                <Typography variant="h4" component="h1" sx={{
+                  fontWeight: 700,
                   color: theme.palette.primary.main,
                   display: 'flex',
                   alignItems: 'center',
@@ -678,9 +829,9 @@ const StatCard = ({
                   Track expiring items and manage recalls to ensure patient safety and regulatory compliance
                 </Typography>
               </Box>
-              
-              <Box sx={{ 
-                display: 'flex', 
+
+              <Box sx={{
+                display: 'flex',
                 gap: 2,
                 flexDirection: isMobile ? 'column' : 'row',
                 width: isMobile ? '100%' : 'auto'
@@ -702,14 +853,14 @@ const StatCard = ({
             </Box>
 
             {/* Search and Filter Bar */}
-            <Paper sx={{ 
-              p: 2, 
+            <Paper sx={{
+              p: 2,
               borderRadius: 2,
               bgcolor: alpha(theme.palette.primary.main, 0.03),
               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
             }}>
-              <Box sx={{ 
-                display: 'flex', 
+              <Box sx={{
+                display: 'flex',
                 gap: 2,
                 flexDirection: isMobile ? 'column' : 'row',
                 alignItems: isMobile ? 'stretch' : 'center'
@@ -727,7 +878,7 @@ const StatCard = ({
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ 
+                  sx={{
                     flex: 1,
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -741,20 +892,20 @@ const StatCard = ({
                       key={filter}
                       label={
                         filter === 'all' ? 'All Items' :
-                        filter === 'critical' ? 'Critical (≤30 days)' :
-                        filter === 'warning' ? 'Warning (31-60 days)' :
-                        'Safe (>60 days)'
+                          filter === 'critical' ? 'Critical (≤30 days)' :
+                            filter === 'warning' ? 'Warning (31-60 days)' :
+                              'Safe (>60 days)'
                       }
                       onClick={() => setFilterDays(filter)}
-                      color={filterDays === filter ? 
-                        (filter === 'critical' ? 'error' : 
-                         filter === 'warning' ? 'warning' : 
-                         filter === 'safe' ? 'success' : 'primary') : 
+                      color={filterDays === filter ?
+                        (filter === 'critical' ? 'error' :
+                          filter === 'warning' ? 'warning' :
+                            filter === 'safe' ? 'success' : 'primary') :
                         'default'}
                       variant={filterDays === filter ? 'filled' : 'outlined'}
-                      icon={filter === 'critical' ? <ErrorIcon /> : 
-                            filter === 'warning' ? <WarningIcon /> : 
-                            filter === 'safe' ? <CheckCircleIcon /> : <FilterIcon />}
+                      icon={filter === 'critical' ? <ErrorIcon /> :
+                        filter === 'warning' ? <WarningIcon /> :
+                          filter === 'safe' ? <CheckCircleIcon /> : <FilterIcon />}
                       sx={{ borderRadius: 2 }}
                     />
                   ))}
@@ -765,66 +916,66 @@ const StatCard = ({
         </Slide>
 
         {/* Stats Cards with Enhanced Design */}
-<Box
-  sx={{
-    display: 'flex',
-    flexDirection: isMobile ? 'column' : 'row',
-    gap: 2,
-    mb: 4,
-    flexWrap: 'wrap'
-  }}
->
-  <StatCard
-    value={stats.critical}
-    label="Critical Items"
-    subLabel="≤ 30 days to expiry"
-    icon={ErrorIcon}
-    color="#667eea"
-    gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-  />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 2,
+            mb: 4,
+            flexWrap: 'wrap'
+          }}
+        >
+          <StatCard
+            value={stats.critical}
+            label="Critical Items"
+            subLabel="≤ 30 days to expiry"
+            icon={ErrorIcon}
+            color="#667eea"
+            gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          />
 
-  <StatCard
-    value={stats.warning}
-    label="Warning Items"
-    subLabel="31–60 days to expiry"
-    icon={WarningIcon}
-    color="#F59E0B"
-    gradient="linear-gradient(135deg, #F59E0B 0%, #D97706 100%)"
-    delay={200}
-  />
+          <StatCard
+            value={stats.warning}
+            label="Warning Items"
+            subLabel="31–60 days to expiry"
+            icon={WarningIcon}
+            color="#F59E0B"
+            gradient="linear-gradient(135deg, #F59E0B 0%, #D97706 100%)"
+            delay={200}
+          />
 
-  <StatCard
-    value={stats.expired}
-    label="Expired Items"
-    subLabel="Require immediate action"
-    icon={HistoryIcon}
-    color="#EF4444"
-    gradient="linear-gradient(135deg, #EF4444 0%, #DC2626 100%)"
-    delay={400}
-  />
+          <StatCard
+            value={stats.expired}
+            label="Expired Items"
+            subLabel="Require immediate action"
+            icon={HistoryIcon}
+            color="#EF4444"
+            gradient="linear-gradient(135deg, #EF4444 0%, #DC2626 100%)"
+            delay={400}
+          />
 
-  <StatCard
-    value={stats.safe}
-    label="Safe Items"
-    subLabel="> 60 days to expiry"
-    icon={CheckCircleIcon}
-    color="#8B5CF6"
-    gradient="linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)"
-    delay={600}
-  />
-</Box>
+          <StatCard
+            value={stats.safe}
+            label="Safe Items"
+            subLabel="> 60 days to expiry"
+            icon={CheckCircleIcon}
+            color="#8B5CF6"
+            gradient="linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)"
+            delay={600}
+          />
+        </Box>
 
 
         {/* Tabs */}
         <Grow in={loaded} timeout={600}>
-          <Paper sx={{ 
-            mb: 3, 
+          <Paper sx={{
+            mb: 3,
             borderRadius: 2,
             overflow: 'hidden',
             boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
           }}>
-            <Tabs 
-              value={activeTab} 
+            <Tabs
+              value={activeTab}
               onChange={(e, newValue) => setActiveTab(newValue)}
               variant={isMobile ? "scrollable" : "fullWidth"}
               scrollButtons={isMobile ? "auto" : false}
@@ -846,23 +997,23 @@ const StatCard = ({
                 }
               }}
             >
-              <Tab 
+              <Tab
                 icon={<Badge badgeContent={stats.critical + stats.warning} color="error" />}
                 iconPosition="start"
-                label="Upcoming Expiries" 
+                label="Upcoming Expiries"
               />
-              <Tab 
+              <Tab
                 icon={<Badge badgeContent={recallItems.filter(r => r.status !== 'resolved').length} color="error" />}
                 iconPosition="start"
-                label="Recall Alerts" 
+                label="Recall Alerts"
               />
-              <Tab 
+              <Tab
                 icon={<InventoryIcon />}
-                label="Disposal Log" 
+                label="Disposal Log"
               />
-              <Tab 
+              <Tab
                 icon={<TimelineIcon />}
-                label="Trends & Analytics" 
+                label="Trends & Analytics"
               />
             </Tabs>
           </Paper>
@@ -873,7 +1024,7 @@ const StatCard = ({
           <Box>
             {activeTab === 0 && (
               <Box>
-                <TableContainer component={Paper} sx={{ 
+                <TableContainer component={Paper} sx={{
                   borderRadius: 2,
                   boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                   overflow: 'hidden'
@@ -894,10 +1045,10 @@ const StatCard = ({
                     <TableBody>
                       {filteredExpiryItems.map((item, index) => (
                         <Grow in={true} timeout={300} key={item.id} style={{ transitionDelay: `${index * 50}ms` }}>
-                          <TableRow 
+                          <TableRow
                             sx={{
                               backgroundColor: item.status === 'expired' ? alpha('#f44336', 0.05) : 'transparent',
-                              '&:hover': { 
+                              '&:hover': {
                                 backgroundColor: alpha(theme.palette.primary.main, 0.04),
                                 transition: 'background-color 0.3s'
                               },
@@ -906,7 +1057,7 @@ const StatCard = ({
                           >
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar sx={{ 
+                                <Avatar sx={{
                                   bgcolor: alpha(getCategoryColor(item.category), 0.1),
                                   color: getCategoryColor(item.category)
                                 }}>
@@ -924,10 +1075,10 @@ const StatCard = ({
                             </TableCell>
                             <TableCell>
                               <Box>
-                                <Chip 
-                                  label={item.batch} 
-                                  size="small" 
-                                  variant="outlined" 
+                                <Chip
+                                  label={item.batch}
+                                  size="small"
+                                  variant="outlined"
                                   sx={{ mb: 0.5 }}
                                 />
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
@@ -940,31 +1091,31 @@ const StatCard = ({
                             </TableCell>
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Box sx={{ 
-                                  width: 8, 
-                                  height: 8, 
-                                  borderRadius: '50%', 
-                                  bgcolor: getStatusColor(item.status) 
+                                <Box sx={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: '50%',
+                                  bgcolor: getStatusColor(item.status)
                                 }} />
-                                <Chip 
+                                <Chip
                                   icon={getStatusIcon(item.status)}
                                   label={
-                                    item.daysToExpiry <= 0 ? 
-                                    `Expired ${Math.abs(item.daysToExpiry)}d ago` : 
-                                    `${item.daysToExpiry}d left`
+                                    item.daysToExpiry <= 0 ?
+                                      `Expired ${Math.abs(item.daysToExpiry)}d ago` :
+                                      `${item.daysToExpiry}d left`
                                   }
-                                  color={item.status === 'critical' || item.status === 'expired' ? 'error' : 
-                                         item.status === 'warning' ? 'warning' : 'success'}
+                                  color={item.status === 'critical' || item.status === 'expired' ? 'error' :
+                                    item.status === 'warning' ? 'warning' : 'success'}
                                   size="small"
                                   sx={{ fontWeight: 500 }}
                                 />
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Chip 
+                              <Chip
                                 label={item.category}
                                 size="small"
-                                sx={{ 
+                                sx={{
                                   bgcolor: alpha(getCategoryColor(item.category), 0.1),
                                   color: getCategoryColor(item.category),
                                   fontWeight: 500
@@ -993,7 +1144,7 @@ const StatCard = ({
                               <Box sx={{ display: 'flex', gap: 1 }}>
                                 {item.status === 'expired' && (
                                   <Tooltip title="Dispose Item">
-                                    <IconButton 
+                                    <IconButton
                                       color="error"
                                       onClick={() => handleOpenDisposalDialog(item)}
                                       size="small"
@@ -1008,7 +1159,7 @@ const StatCard = ({
                                   </Tooltip>
                                 )}
                                 <Tooltip title="View Details">
-                                  <IconButton 
+                                  <IconButton
                                     size="small"
                                     sx={{
                                       '&:hover': {
@@ -1020,7 +1171,7 @@ const StatCard = ({
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="Transfer">
-                                  <IconButton 
+                                  <IconButton
                                     size="small"
                                     sx={{
                                       '&:hover': {
@@ -1039,10 +1190,10 @@ const StatCard = ({
                     </TableBody>
                   </Table>
                 </TableContainer>
-                
+
                 {filteredExpiryItems.length === 0 && (
-                  <Paper sx={{ 
-                    p: 8, 
+                  <Paper sx={{
+                    p: 8,
                     textAlign: 'center',
                     borderRadius: 2,
                     bgcolor: alpha(theme.palette.primary.main, 0.02)
@@ -1062,10 +1213,10 @@ const StatCard = ({
             {activeTab === 1 && (
               <Box>
                 <Box sx={{ mb: 3 }}>
-                  <Alert 
-                    severity="warning" 
+                  <Alert
+                    severity="warning"
                     icon={<NotificationIcon />}
-                    sx={{ 
+                    sx={{
                       mb: 2,
                       borderRadius: 2,
                       alignItems: 'center'
@@ -1080,8 +1231,8 @@ const StatCard = ({
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {recallItems.map((recall, index) => (
                     <Grow in={true} timeout={400} key={recall.id} style={{ transitionDelay: `${index * 100}ms` }}>
-                      <Paper sx={{ 
-                        p: 3, 
+                      <Paper sx={{
+                        p: 3,
                         borderRadius: 2,
                         borderLeft: `4px solid ${getSeverityColor(recall.severity)}`,
                         boxShadow: `0 4px 12px ${alpha(getSeverityColor(recall.severity), 0.1)}`,
@@ -1091,8 +1242,8 @@ const StatCard = ({
                           boxShadow: `0 6px 16px ${alpha(getSeverityColor(recall.severity), 0.15)}`
                         }
                       }}>
-                        <Box sx={{ 
-                          display: 'flex', 
+                        <Box sx={{
+                          display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'flex-start',
                           flexDirection: isMobile ? 'column' : 'row',
@@ -1100,10 +1251,10 @@ const StatCard = ({
                         }}>
                           <Box sx={{ flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
-                              <Chip 
-                                label={`${recall.severity.toUpperCase()} PRIORITY`} 
-                                color={recall.severity === 'high' ? 'error' : 
-                                       recall.severity === 'medium' ? 'warning' : 'info'}
+                              <Chip
+                                label={`${recall.severity.toUpperCase()} PRIORITY`}
+                                color={recall.severity === 'high' ? 'error' :
+                                  recall.severity === 'medium' ? 'warning' : 'info'}
                                 size="small"
                                 sx={{ fontWeight: 700 }}
                               />
@@ -1111,7 +1262,7 @@ const StatCard = ({
                                 {recall.product}
                               </Typography>
                             </Box>
-                            
+
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
                               <Box>
                                 <Typography variant="caption" color="text.secondary" display="block">
@@ -1123,11 +1274,19 @@ const StatCard = ({
                               </Box>
                               <Box>
                                 <Typography variant="caption" color="text.secondary" display="block">
+                                  Device Type
+                                </Typography>
+                                <Typography variant="body2" fontWeight={500}>
+                                  {recall.deviceType || 'Medical Device'}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" display="block">
                                   Batch Number
                                 </Typography>
-                                <Chip 
-                                  label={recall.batch} 
-                                  size="small" 
+                                <Chip
+                                  label={recall.batch}
+                                  size="small"
                                   variant="outlined"
                                   sx={{ mt: 0.5 }}
                                 />
@@ -1150,31 +1309,75 @@ const StatCard = ({
                               </Box>
                             </Box>
 
-                            <Alert 
-                              severity="info" 
-                              sx={{ 
+                            <Alert
+                              severity="info"
+                              sx={{
                                 borderRadius: 1,
-                                bgcolor: alpha('#2196f3', 0.05)
+                                bgcolor: alpha('#2196f3', 0.05),
+                                mb: 2
                               }}
                             >
                               <Typography variant="body2">
                                 {recall.reason}
                               </Typography>
                             </Alert>
+
+                            {/* NEW: Additional device information */}
+                            <Box sx={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              gap: 2,
+                              mt: 2,
+                              p: 1.5,
+                              bgcolor: alpha(theme.palette.primary.main, 0.02),
+                              borderRadius: 1
+                            }}>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" display="block">
+                                  Model
+                                </Typography>
+                                <Typography variant="body2" fontWeight={500}>
+                                  {recall.model || 'N/A'}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" display="block">
+                                  Risk Level
+                                </Typography>
+                                <Chip
+                                  label={recall.riskLevel || 'Not Specified'}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: alpha(getSeverityColor(recall.severity), 0.1),
+                                    color: getSeverityColor(recall.severity),
+                                    fontWeight: 500,
+                                    mt: 0.5
+                                  }}
+                                />
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" display="block">
+                                  FDA Recall #
+                                </Typography>
+                                <Typography variant="body2" fontWeight={500}>
+                                  {recall.fdaRecallNumber || 'Pending'}
+                                </Typography>
+                              </Box>
+                            </Box>
                           </Box>
-                          
-                          <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
+
+                          <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'flex-end',
                             gap: 2,
-                            minWidth: isMobile ? '100%' : 180
+                            minWidth: isMobile ? '100%' : 200
                           }}>
                             <Box sx={{ textAlign: 'right' }}>
-                              <Chip 
+                              <Chip
                                 icon={recall.status === 'resolved' ? <ResolvedIcon /> : <PendingIcon />}
                                 label={recall.status.replace('-', ' ').toUpperCase()}
-                                sx={{ 
+                                sx={{
                                   bgcolor: alpha(getRecallStatusColor(recall.status), 0.1),
                                   color: getRecallStatusColor(recall.status),
                                   fontWeight: 600,
@@ -1185,8 +1388,13 @@ const StatCard = ({
                                 Urgency: {recall.urgency}
                               </Typography>
                             </Box>
-                            
-                            <Box sx={{ display: 'flex', gap: 1, flexDirection: isMobile ? 'row' : 'column', width: '100%' }}>
+
+                            <Box sx={{
+                              display: 'flex',
+                              gap: 1,
+                              flexDirection: isMobile ? 'row' : 'column',
+                              width: '100%'
+                            }}>
                               {recall.status !== 'resolved' && (
                                 <>
                                   <Button
@@ -1195,7 +1403,7 @@ const StatCard = ({
                                     variant="contained"
                                     onClick={() => updateRecallStatus(recall.id, 'in-progress')}
                                     disabled={recall.status === 'in-progress'}
-                                    sx={{ 
+                                    sx={{
                                       borderRadius: 1.5,
                                       textTransform: 'none',
                                       fontWeight: 600
@@ -1209,7 +1417,7 @@ const StatCard = ({
                                     variant="contained"
                                     color="success"
                                     onClick={() => updateRecallStatus(recall.id, 'resolved')}
-                                    sx={{ 
+                                    sx={{
                                       borderRadius: 1.5,
                                       textTransform: 'none',
                                       fontWeight: 600
@@ -1219,13 +1427,22 @@ const StatCard = ({
                                   </Button>
                                 </>
                               )}
+                              {/* UPDATED: View Details button now functional */}
                               <Button
                                 fullWidth={isMobile}
                                 size="small"
                                 variant="outlined"
-                                sx={{ 
+                                startIcon={<VisibilityIcon />}
+                                onClick={() => handleViewDetails(recall)}
+                                sx={{
                                   borderRadius: 1.5,
-                                  textTransform: 'none'
+                                  textTransform: 'none',
+                                  borderColor: theme.palette.primary.main,
+                                  color: theme.palette.primary.main,
+                                  '&:hover': {
+                                    borderColor: theme.palette.primary.dark,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.04)
+                                  }
                                 }}
                               >
                                 View Details
@@ -1243,8 +1460,8 @@ const StatCard = ({
             {activeTab === 2 && (
               <Box>
                 <Box sx={{ mb: 3 }}>
-                  <Box sx={{ 
-                    display: 'flex', 
+                  <Box sx={{
+                    display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     flexDirection: isMobile ? 'column' : 'row',
@@ -1276,7 +1493,7 @@ const StatCard = ({
                         <Grow in={true} timeout={300} key={log.id} style={{ transitionDelay: `${index * 50}ms` }}>
                           <TableRow
                             sx={{
-                              '&:hover': { 
+                              '&:hover': {
                                 backgroundColor: alpha('#9c27b0', 0.04),
                                 transition: 'background-color 0.3s'
                               }
@@ -1287,9 +1504,9 @@ const StatCard = ({
                                 <Typography variant="body1" fontWeight={500}>
                                   {log.itemName}
                                 </Typography>
-                                <Chip 
-                                  label={log.batch} 
-                                  size="small" 
+                                <Chip
+                                  label={log.batch}
+                                  size="small"
                                   variant="outlined"
                                   sx={{ mt: 0.5 }}
                                 />
@@ -1313,10 +1530,10 @@ const StatCard = ({
                                 <Typography variant="body2" sx={{ mb: 0.5 }}>
                                   {log.reason}
                                 </Typography>
-                                <Chip 
+                                <Chip
                                   label={log.method}
                                   size="small"
-                                  sx={{ 
+                                  sx={{
                                     bgcolor: alpha('#9c27b0', 0.1),
                                     color: '#9c27b0',
                                     fontWeight: 500
@@ -1353,8 +1570,8 @@ const StatCard = ({
 
             {activeTab === 3 && (
               <Box>
-                <Paper sx={{ 
-                  p: 4, 
+                <Paper sx={{
+                  p: 4,
                   borderRadius: 2,
                   textAlign: 'center',
                   bgcolor: alpha(theme.palette.primary.main, 0.02)
@@ -1364,7 +1581,7 @@ const StatCard = ({
                     Trends & Analytics Coming Soon
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400, mx: 'auto' }}>
-                    Advanced analytics and trend visualization for expiry patterns, cost analysis, 
+                    Advanced analytics and trend visualization for expiry patterns, cost analysis,
                     and predictive insights will be available in the next update.
                   </Typography>
                 </Paper>
@@ -1375,9 +1592,9 @@ const StatCard = ({
 
         {/* AI Recommendations */}
         <Grow in={loaded} timeout={800}>
-          <Paper sx={{ 
-            p: 3, 
-            mt: 4, 
+          <Paper sx={{
+            p: 3,
+            mt: 4,
             borderRadius: 2,
             bgcolor: alpha(theme.palette.primary.main, 0.05),
             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -1392,7 +1609,7 @@ const StatCard = ({
                   </Typography>
                 </Box>
                 <Typography variant="body2" paragraph>
-                  {stats.critical > 0 ? 
+                  {stats.critical > 0 ?
                     `🔴 **Priority Action Required**: Dispose of ${stats.critical} critical items expiring within 30 days. ` +
                     `Consider transferring excess stock of ${expiryItems.filter(i => i.daysToExpiry > 60 && i.quantity > 50).length} items to departments with higher consumption rates.` :
                     '✅ **All Systems Optimal**: No critical items requiring immediate attention. Maintain regular monitoring schedule.'
@@ -1403,10 +1620,10 @@ const StatCard = ({
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Chip 
-                  label="94% Accuracy" 
-                  color="primary" 
-                  sx={{ 
+                <Chip
+                  label="94% Accuracy"
+                  color="primary"
+                  sx={{
                     fontWeight: 600,
                     mb: 1
                   }}
@@ -1438,8 +1655,8 @@ const StatCard = ({
         )}
 
         {/* Disposal Dialog */}
-        <Dialog 
-          open={openDisposalDialog} 
+        <Dialog
+          open={openDisposalDialog}
           onClose={handleCloseDisposalDialog}
           TransitionComponent={Slide}
           TransitionProps={{ direction: 'up' }}
@@ -1447,7 +1664,7 @@ const StatCard = ({
             sx: { borderRadius: 2 }
           }}
         >
-          <DialogTitle sx={{ 
+          <DialogTitle sx={{
             bgcolor: alpha('#f44336', 0.05),
             borderBottom: `1px solid ${alpha('#f44336', 0.1)}`
           }}>
@@ -1468,8 +1685,8 @@ const StatCard = ({
           <DialogContent sx={{ pt: 3 }}>
             {selectedItem && (
               <Box>
-                <Alert 
-                  severity="error" 
+                <Alert
+                  severity="error"
                   icon={<WarningIcon />}
                   sx={{ mb: 3, borderRadius: 1.5 }}
                 >
@@ -1477,10 +1694,10 @@ const StatCard = ({
                     This action cannot be undone. All disposal records are permanently logged in the audit trail.
                   </Typography>
                 </Alert>
-                
-                <Box sx={{ 
-                  p: 2, 
-                  mb: 3, 
+
+                <Box sx={{
+                  p: 2,
+                  mb: 3,
                   borderRadius: 1.5,
                   bgcolor: alpha('#f44336', 0.03),
                   border: `1px solid ${alpha('#f44336', 0.1)}`
@@ -1494,7 +1711,7 @@ const StatCard = ({
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="body2">Expiry Status:</Typography>
-                    <Chip 
+                    <Chip
                       label={selectedItem.status === 'expired' ? 'EXPIRED' : 'CRITICAL'}
                       color="error"
                       size="small"
@@ -1505,12 +1722,12 @@ const StatCard = ({
                     <Typography variant="body2" fontWeight={600} color="error">{selectedItem.value}</Typography>
                   </Box>
                 </Box>
-                
+
                 <TextField
                   fullWidth
                   label="Quantity to Dispose"
                   value={disposalForm.quantity}
-                  onChange={(e) => setDisposalForm({...disposalForm, quantity: e.target.value})}
+                  onChange={(e) => setDisposalForm({ ...disposalForm, quantity: e.target.value })}
                   type="number"
                   sx={{ mb: 2 }}
                   helperText={`Maximum: ${selectedItem.quantity} units available`}
@@ -1518,13 +1735,13 @@ const StatCard = ({
                     endAdornment: <InputAdornment position="end">units</InputAdornment>,
                   }}
                 />
-                
+
                 <TextField
                   select
                   fullWidth
                   label="Disposal Method"
                   value={disposalForm.disposalMethod}
-                  onChange={(e) => setDisposalForm({...disposalForm, disposalMethod: e.target.value})}
+                  onChange={(e) => setDisposalForm({ ...disposalForm, disposalMethod: e.target.value })}
                   sx={{ mb: 2 }}
                 >
                   <MenuItem value="Medical Waste">🏥 Medical Waste</MenuItem>
@@ -1533,12 +1750,12 @@ const StatCard = ({
                   <MenuItem value="Pharmaceutical Waste">💊 Pharmaceutical Waste</MenuItem>
                   <MenuItem value="Return to Supplier">↪️ Return to Supplier</MenuItem>
                 </TextField>
-                
+
                 <TextField
                   fullWidth
                   label="Reason for Disposal"
                   value={disposalForm.reason}
-                  onChange={(e) => setDisposalForm({...disposalForm, reason: e.target.value})}
+                  onChange={(e) => setDisposalForm({ ...disposalForm, reason: e.target.value })}
                   multiline
                   rows={3}
                   sx={{ mb: 2 }}
@@ -1547,13 +1764,13 @@ const StatCard = ({
               </Box>
             )}
           </DialogContent>
-          <DialogActions sx={{ 
+          <DialogActions sx={{
             p: 2,
             borderTop: `1px solid ${theme.palette.divider}`
           }}>
-            <Button 
+            <Button
               onClick={handleCloseDisposalDialog}
-              sx={{ 
+              sx={{
                 borderRadius: 1.5,
                 textTransform: 'none',
                 fontWeight: 600
@@ -1561,12 +1778,12 @@ const StatCard = ({
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleDisposeItem} 
-              variant="contained" 
+            <Button
+              onClick={handleDisposeItem}
+              variant="contained"
               color="error"
               disabled={!disposalForm.quantity || !disposalForm.reason}
-              sx={{ 
+              sx={{
                 borderRadius: 1.5,
                 textTransform: 'none',
                 fontWeight: 600,
@@ -1584,7 +1801,7 @@ const StatCard = ({
           open={openAddItemDrawer}
           onClose={handleCloseAddItemDrawer}
           PaperProps={{
-            sx: { 
+            sx: {
               width: isMobile ? '100%' : 400,
               p: 3
             }
@@ -1610,7 +1827,7 @@ const StatCard = ({
                 fullWidth
                 label="Item Name"
                 value={newItemForm.name}
-                onChange={(e) => setNewItemForm({...newItemForm, name: e.target.value})}
+                onChange={(e) => setNewItemForm({ ...newItemForm, name: e.target.value })}
                 sx={{ mb: 2 }}
                 required
                 InputProps={{
@@ -1621,23 +1838,23 @@ const StatCard = ({
                   ),
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 label="Batch Number"
                 value={newItemForm.batch}
-                onChange={(e) => setNewItemForm({...newItemForm, batch: e.target.value})}
+                onChange={(e) => setNewItemForm({ ...newItemForm, batch: e.target.value })}
                 sx={{ mb: 2 }}
                 required
                 placeholder="BATCH-XXXX"
               />
-              
+
               <TextField
                 fullWidth
                 label="Expiry Date"
                 type="date"
                 value={newItemForm.expiryDate}
-                onChange={(e) => setNewItemForm({...newItemForm, expiryDate: e.target.value})}
+                onChange={(e) => setNewItemForm({ ...newItemForm, expiryDate: e.target.value })}
                 sx={{ mb: 2 }}
                 required
                 InputLabelProps={{ shrink: true }}
@@ -1649,26 +1866,26 @@ const StatCard = ({
                   ),
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 label="Quantity"
                 type="number"
                 value={newItemForm.quantity}
-                onChange={(e) => setNewItemForm({...newItemForm, quantity: e.target.value})}
+                onChange={(e) => setNewItemForm({ ...newItemForm, quantity: e.target.value })}
                 sx={{ mb: 2 }}
                 required
                 InputProps={{
                   endAdornment: <InputAdornment position="end">units</InputAdornment>,
                 }}
               />
-              
+
               <TextField
                 select
                 fullWidth
                 label="Category"
                 value={newItemForm.category}
-                onChange={(e) => setNewItemForm({...newItemForm, category: e.target.value})}
+                onChange={(e) => setNewItemForm({ ...newItemForm, category: e.target.value })}
                 sx={{ mb: 2 }}
               >
                 <MenuItem value="Pharmacy">💊 Pharmacy</MenuItem>
@@ -1676,13 +1893,13 @@ const StatCard = ({
                 <MenuItem value="Laboratory">🔬 Laboratory</MenuItem>
                 <MenuItem value="Consumable">📦 Consumable</MenuItem>
               </TextField>
-              
+
               <TextField
                 select
                 fullWidth
                 label="Storage Location"
                 value={newItemForm.location}
-                onChange={(e) => setNewItemForm({...newItemForm, location: e.target.value})}
+                onChange={(e) => setNewItemForm({ ...newItemForm, location: e.target.value })}
                 sx={{ mb: 2 }}
               >
                 <MenuItem value="Main Pharmacy">🏥 Main Pharmacy</MenuItem>
@@ -1700,7 +1917,7 @@ const StatCard = ({
                 variant="contained"
                 onClick={handleAddNewItem}
                 disabled={!newItemForm.name || !newItemForm.batch || !newItemForm.expiryDate || !newItemForm.quantity}
-                sx={{ 
+                sx={{
                   mb: 1,
                   borderRadius: 1.5,
                   py: 1.5,
@@ -1713,7 +1930,7 @@ const StatCard = ({
               <Button
                 fullWidth
                 onClick={handleCloseAddItemDrawer}
-                sx={{ 
+                sx={{
                   borderRadius: 1.5,
                   textTransform: 'none'
                 }}
@@ -1723,6 +1940,326 @@ const StatCard = ({
             </Box>
           </Box>
         </Drawer>
+
+        {/* UPDATED: Device Details Modal with Box instead of Grid */}
+        <Dialog
+          open={openDeviceDetails}
+          onClose={handleCloseDeviceDetails}
+          maxWidth="md"
+          fullWidth
+          TransitionComponent={Slide}
+          TransitionProps={{ direction: 'up' }}
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+              maxHeight: '90vh'
+            }
+          }}
+        >
+          {selectedDevice && (
+            <>
+              <DialogTitle sx={{
+                bgcolor: alpha(getSeverityColor(selectedDevice.severity), 0.05),
+                borderBottom: `1px solid ${alpha(getSeverityColor(selectedDevice.severity), 0.1)}`,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar sx={{
+                    bgcolor: getSeverityColor(selectedDevice.severity),
+                    color: 'white'
+                  }}>
+                    <DevicesIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {selectedDevice.product} - Device Details
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {selectedDevice.manufacturer} • Model: {selectedDevice.model}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Chip
+                  label={selectedDevice.severity.toUpperCase()}
+                  color={selectedDevice.severity === 'high' ? 'error' :
+                    selectedDevice.severity === 'medium' ? 'warning' : 'info'}
+                  sx={{ fontWeight: 700 }}
+                />
+              </DialogTitle>
+
+              <DialogContent sx={{ pt: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {/* Device Images Section */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ImageIcon color="action" />
+                      Device Images
+                    </Typography>
+                    <Box sx={{
+                      display: 'flex',
+                      gap: 2,
+                      overflowX: 'auto',
+                      pb: 1,
+                      '&::-webkit-scrollbar': {
+                        height: 6,
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: alpha(theme.palette.primary.main, 0.05),
+                        borderRadius: 3,
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: alpha(theme.palette.primary.main, 0.2),
+                        borderRadius: 3,
+                      }
+                    }}>
+                      {selectedDevice.images && selectedDevice.images.length > 0 ? (
+  selectedDevice.images.map((image, index) => (
+    <Box
+      key={index}
+      component="img"
+      src={image}
+      alt={`${selectedDevice.product} - View ${index + 1}`}
+      onError={handleImageError}
+      sx={{
+        width: 200,
+        height: 150,
+        borderRadius: 1.5,
+        objectFit: 'cover',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: '#f5f5f5'
+      }}
+    />
+  ))
+) : (
+  <Paper sx={{
+    p: 4,
+    textAlign: 'center',
+    borderRadius: 1.5,
+    bgcolor: alpha(theme.palette.primary.main, 0.02),
+    width: '100%'
+  }}>
+    <ImageIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+    <Typography variant="body2" color="text.secondary">
+      No images available for this device
+    </Typography>
+  </Paper>
+)}
+                    </Box>
+                  </Box>
+
+                  {/* Recall Information - UPDATED: Replaced Grid with Box */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <WarningIcon color="action" />
+                      Recall Information
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: isMobile ? 'column' : 'row',
+                      gap: 2 
+                    }}>
+                      <Box sx={{ 
+                        flex: 1,
+                        minWidth: isMobile ? '100%' : '50%'
+                      }}>
+                        <Paper sx={{ p: 2, borderRadius: 1.5, bgcolor: alpha('#ff4444', 0.03), height: '100%' }}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Recall Reason
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            {selectedDevice.reason}
+                          </Typography>
+                        </Paper>
+                      </Box>
+                      <Box sx={{ 
+                        flex: 1,
+                        minWidth: isMobile ? '100%' : '50%'
+                      }}>
+                        <Paper sx={{ p: 2, borderRadius: 1.5, bgcolor: alpha('#2196f3', 0.03), height: '100%' }}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Recall Details
+                          </Typography>
+                          <Box sx={{ mt: 0.5 }}>
+                            <Typography variant="body2">
+                              <strong>Date:</strong> {selectedDevice.recallDate}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>FDA #:</strong> {selectedDevice.fdaRecallNumber || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Affected:</strong> {selectedDevice.affectedQuantity} units
+                            </Typography>
+                          </Box>
+                        </Paper>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  {/* Medical Conditions Section */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <HealingIcon color="action" />
+                      Medical Conditions & Usage
+                    </Typography>
+                    <Paper sx={{ p: 2, borderRadius: 1.5, bgcolor: alpha('#4caf50', 0.03) }}>
+                      {selectedDevice.medicalConditions && selectedDevice.medicalConditions.length > 0 ? (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                          {selectedDevice.medicalConditions.map((condition, index) => (
+                            <Chip
+                              key={index}
+                              label={condition}
+                              size="small"
+                              sx={{
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                color: theme.palette.primary.main,
+                                fontWeight: 500,
+                                '&:hover': {
+                                  bgcolor: alpha(theme.palette.primary.main, 0.2)
+                                }
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                          No specific medical conditions data available
+                        </Typography>
+                      )}
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                        This device is commonly used in the treatment and management of the above conditions.
+                      </Typography>
+                    </Paper>
+                  </Box>
+
+                  {/* Device Specifications - UPDATED: Replaced Grid with Box */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <InventoryIcon color="action" />
+                      Device Specifications
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: isMobile ? 'column' : 'row',
+                      gap: 2 
+                    }}>
+                      <Box sx={{ 
+                        flex: 1,
+                        minWidth: isMobile ? '100%' : '50%'
+                      }}>
+                        <Box sx={{
+                          p: 2,
+                          borderRadius: 1.5,
+                          bgcolor: alpha(theme.palette.primary.main, 0.02),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                          height: '100%'
+                        }}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Manufacturer Information
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            <strong>Company:</strong> {selectedDevice.manufacturer}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Device Type:</strong> {selectedDevice.deviceType}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Model:</strong> {selectedDevice.model}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ 
+                        flex: 1,
+                        minWidth: isMobile ? '100%' : '50%'
+                      }}>
+                        <Box sx={{
+                          p: 2,
+                          borderRadius: 1.5,
+                          bgcolor: alpha(getSeverityColor(selectedDevice.severity), 0.02),
+                          border: `1px solid ${alpha(getSeverityColor(selectedDevice.severity), 0.1)}`,
+                          height: '100%'
+                        }}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Risk & Safety Information
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            <strong>Risk Level:</strong> {selectedDevice.riskLevel}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Urgency:</strong> {selectedDevice.urgency}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Current Status:</strong>
+                            <Chip
+                              label={selectedDevice.status.replace('-', ' ').toUpperCase()}
+                              size="small"
+                              sx={{
+                                ml: 1,
+                                bgcolor: alpha(getRecallStatusColor(selectedDevice.status), 0.1),
+                                color: getRecallStatusColor(selectedDevice.status),
+                                fontWeight: 500
+                              }}
+                            />
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  {/* Serial Numbers */}
+                  {selectedDevice.serialNumbers && (
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+                        Affected Serial Numbers / Lot Numbers
+                      </Typography>
+                      <Paper sx={{ p: 2, borderRadius: 1.5, bgcolor: alpha('#ff9800', 0.03) }}>
+                        {selectedDevice.serialNumbers.map((serial, index) => (
+                          <Typography key={index} variant="body2" fontFamily="monospace" sx={{ mb: 0.5 }}>
+                            {serial}
+                          </Typography>
+                        ))}
+                      </Paper>
+                    </Box>
+                  )}
+                </Box>
+              </DialogContent>
+
+              <DialogActions sx={{
+                p: 2,
+                borderTop: `1px solid ${theme.palette.divider}`
+              }}>
+                <Button
+                  onClick={handleCloseDeviceDetails}
+                  sx={{
+                    borderRadius: 1.5,
+                    textTransform: 'none',
+                    fontWeight: 600
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    // Optional: Add functionality for printing or exporting details
+                    handleCloseDeviceDetails();
+                  }}
+                  sx={{
+                    borderRadius: 1.5,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3
+                  }}
+                >
+                  Print Details
+                </Button>
+              </DialogActions>
+            </>
+          )}
+        </Dialog>
       </Box>
     </Fade>
   );
